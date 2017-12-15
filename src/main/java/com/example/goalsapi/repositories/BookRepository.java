@@ -18,4 +18,6 @@ public interface BookRepository extends MongoRepository<BookDao, String>{
 
     @Query(value = "{'bookId': ?0, 'available': true}", fields = "{'available':1}")
     BookDao getBookAvailable(String bookId);
+
+    BookDao findByAuthorAndTitle(String author, String title);
 }

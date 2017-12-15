@@ -7,6 +7,7 @@ import com.example.goalsapi.models.dao.BookDao;
 import com.example.goalsapi.repositories.BookRepository;
 import com.example.goalsapi.transformers.BookTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -71,8 +72,9 @@ public class BookService {
                 || book.getDescription() == null || book.getDescription().equalsIgnoreCase("")){
             throw new InvalidInputException();
         }
+        if(bookRepository.findByAuthorAndTitle(book.getAuthor(), book.getTitle()) != null)
+            throw new DataIntegrityViolationException("Title and author already exist");
         BookDao bookDao = BookTransformer.transform(book);
-        bookDao.setBookId(UUID.randomUUID().toString());
         bookDao.setAvailable(true);
         bookDao = bookRepository.save(bookDao);
         book.setBookId(bookDao.getBookId());
@@ -107,6 +109,8 @@ public class BookService {
     }
 
     public void setBookAvailable(String bookId, boolean isAvailable) {
+        if(!bookRepository.exists(bookId))
+            throw new NotFoundException();
         BookDao bookDao = bookRepository.findOne(bookId);
         bookDao.setAvailable(isAvailable);
         bookRepository.save(bookDao);

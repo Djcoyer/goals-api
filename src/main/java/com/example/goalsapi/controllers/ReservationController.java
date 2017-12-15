@@ -38,12 +38,6 @@ public class ReservationController {
         return reservationService.getUserReservations(userId);
     }
 
-    @RequestMapping(path = "/user/{userId}/active", method = RequestMethod.GET)
-    public ArrayList<CustomerReservationAggregate>
-    getActiveCustomerReservations(@PathVariable("userId") String userId) {
-        return reservationService.getActiveUserReservations(userId);
-    }
-
     //endregion
 
     //region POST

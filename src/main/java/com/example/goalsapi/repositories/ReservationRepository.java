@@ -20,7 +20,4 @@ public interface ReservationRepository extends MongoRepository<ReservationDao, S
 
     @Query(value = "{'reservationId': ?0}", fields="{'bookId':1}")
     ReservationDao getBookIdByreservationId(String reservationId);
-
-    @Query(value="{'returnedDate':null, 'userId':?0}")
-    List<ReservationDao> findAllActiveByUserId(String userId);
 }

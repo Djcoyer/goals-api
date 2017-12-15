@@ -52,19 +52,6 @@ public class ReservationService {
         return reservations;
     }
 
-    public ArrayList<Reservation> getActiveReservationsByUserId(String userId) {
-        List<ReservationDao> reservationDaos = reservationRepository.findAllActiveByUserId(userId);
-        ArrayList<Reservation> reservations = new ArrayList<>();
-        if (reservationDaos == null || reservationDaos.size() == 0)
-            return reservations;
-        for (ReservationDao reservationDao : reservationDaos) {
-            Reservation reservation = ReservationTransformer.transform(reservationDao);
-            reservations.add(reservation);
-        }
-
-        return reservations;
-    }
-
     public Reservation getReservationByUserIdAndBookId(String userId, String bookId) {
         ReservationDao reservationDao = reservationRepository.findByUserIdAndBookId(userId, bookId);
         if (reservationDao == null)
@@ -87,29 +74,6 @@ public class ReservationService {
 
     public ArrayList<CustomerReservationAggregate> getUserReservations(String userId) {
         ArrayList<Reservation> reservations = getReservationsByUserId(userId);
-        ArrayList<CustomerReservationAggregate> reservationAggregates = new ArrayList<>();
-        if (reservations.size() == 0)
-            return reservationAggregates;
-        for (Reservation reservation : reservations) {
-            String bookId = reservation.getBookId();
-            Book book = bookService.getBookAggregateInfo(bookId);
-            CustomerReservationAggregate aggregate = new CustomerReservationAggregate();
-            aggregate.setTitle(book.getTitle());
-            aggregate.setAuthor(book.getAuthor());
-            aggregate.setEndDate(reservation.getReservationEndDate());
-            aggregate.setBookId(book.getBookId());
-            aggregate.setUserId(userId);
-            aggregate.setActive(reservation.getReturnedDate() == null);
-            aggregate.setStartDate(reservation.getReservationStartDate());
-            aggregate.setReservationId(reservation.getReservationId());
-            reservationAggregates.add(aggregate);
-        }
-
-        return reservationAggregates;
-    }
-
-    public ArrayList<CustomerReservationAggregate> getActiveUserReservations(String userId) {
-        ArrayList<Reservation> reservations = getActiveReservationsByUserId(userId);
         ArrayList<CustomerReservationAggregate> reservationAggregates = new ArrayList<>();
         if (reservations.size() == 0)
             return reservationAggregates;
