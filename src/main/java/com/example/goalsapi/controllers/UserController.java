@@ -20,7 +20,7 @@ public class UserController {
 
     @RequestMapping(path = "/{userId}", method = RequestMethod.GET, produces = "application/json")
     public User getUser(@PathVariable("userId") String userId) {
-        User user = userService.getCustomer(userId);
+        User user = userService.getUser(userId);
         return user;
     }
 

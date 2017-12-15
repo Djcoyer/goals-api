@@ -11,7 +11,9 @@ import com.example.goalsapi.models.auth.UpdateUserRequest;
 import com.example.goalsapi.models.dao.UserDao;
 import com.example.goalsapi.repositories.UserRepository;
 import com.example.goalsapi.transformers.UserTransformer;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -30,15 +32,14 @@ public class UserService {
 
     public User createUser(CreateUserRequest request) {
         User user = new User();
-        String customerId = UUID.randomUUID().toString();
         user.setEmailAddress(request.getEmailAddress());
         user.setLastName(request.getLastName());
         user.setFirstName(request.getFirstName());
-        user.setUserId(customerId);
         if (userRepository.existsByEmailAddress(request.getEmailAddress()))
-            throw new ConflictException();
+            throw new DataIntegrityViolationException("Email address already in use");
         String auth0Id = authService.createAuth0User(user, request.getPassword());
         user.setAuth0Id(auth0Id);
+        user.setUserId(UUID.randomUUID().toString());
         UserDao userDao = UserTransformer.transform(user);
         userRepository.insert(userDao);
 
@@ -74,6 +75,8 @@ public class UserService {
     public AuthTokens login(LoginInfo loginInfo) {
         AuthTokens authTokens = authService.login(loginInfo);
         String userId = authService.getCustomerIdFromJwt(authTokens.getId_token());
+        if(!userRepository.exists(userId))
+            throw new NotFoundException();
         UserDao userDao = userRepository.findOne(userId);
         userDao.setRefreshToken(authTokens.getRefresh_token());
         userRepository.save(userDao);
@@ -84,6 +87,8 @@ public class UserService {
         String userId = authService.getCustomerIdFromAuthorizationHeader(authHeader);
         if(userId == null)
             throw new InvalidInputException();
+        if(!userRepository.exists(userId))
+            throw new NotFoundException();
         UserDao userDao = userRepository.findOne(userId);
         String refreshToken = userDao.getRefreshToken();
         if(refreshToken == null || refreshToken.equalsIgnoreCase(""))
@@ -95,7 +100,7 @@ public class UserService {
 
     //region GET
 
-    public User getCustomer(String customerId) {
+    public User getUser(String customerId) {
         UserDao userDao = userRepository.findOne(customerId);
         if(userDao == null)
             throw new NotFoundException();
@@ -108,7 +113,7 @@ public class UserService {
     public void deleteUser(String userId) {
         if(!userRepository.exists(userId))
             throw new NotFoundException();
-        UserDao userDao = userRepository.getAuth0IdByUserId(userId);
+        UserDao userDao = userRepository.findOne(userId);
         String auth0Id = userDao.getAuth0Id();
         authService.deleteUser(auth0Id);
         userRepository.delete(userId);
