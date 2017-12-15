@@ -10,6 +10,7 @@ public class ReservationTransformer {
         reservation.setBookId(reservationDao.getBookId());
         reservation.setReservationEndDate(reservationDao.getReservationEndDate());
         reservation.setUserId(reservationDao.getUserId());
+        reservation.setReservationStartDate(reservationDao.getReservationStartDate());
         reservation.setReservationId(reservationDao.getReservationId());
         reservation.setReturnedDate(reservationDao.getReturnedDate());
         return reservation;
@@ -20,6 +21,7 @@ public class ReservationTransformer {
         reservationDao.setBookId(reservation.getBookId());
         reservationDao.setReservationEndDate(reservation.getReservationEndDate());
         reservationDao.setUserId(reservation.getUserId());
+        reservationDao.setReservationStartDate(reservation.getReservationStartDate());
         reservationDao.setReservationId(reservation.getReservationId());
         reservationDao.setReturnedDate(reservation.getReturnedDate());
         return reservationDao;

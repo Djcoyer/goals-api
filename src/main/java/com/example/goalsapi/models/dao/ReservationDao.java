@@ -17,7 +17,7 @@ public class ReservationDao {
     private String reservationId;
     private String bookId;
     private String userId;
+    private Date reservationStartDate;
     private Date reservationEndDate;
     private Date returnedDate;
-
 }

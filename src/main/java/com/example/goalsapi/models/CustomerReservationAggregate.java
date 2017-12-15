@@ -12,7 +12,10 @@ import java.util.Date;
 public class CustomerReservationAggregate {
     private String userId;
     private String bookId;
+    private String reservationId;
     private String title;
     private String author;
+    private Date startDate;
     private Date endDate;
+    private boolean isActive;
 }

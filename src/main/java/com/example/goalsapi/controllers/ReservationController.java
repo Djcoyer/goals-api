@@ -28,7 +28,7 @@ public class ReservationController {
     }
 
     @RequestMapping(path = "/{reservationId}", method = RequestMethod.GET)
-    public Reservation getReservation(@PathVariable("reservationId")String reservationId) {
+    public Reservation getReservation(@PathVariable("reservationId") String reservationId) {
         return reservationService.getReservation(reservationId);
     }
 
@@ -36,6 +36,12 @@ public class ReservationController {
     public ArrayList<CustomerReservationAggregate>
     getCustomerReservations(@PathVariable("userId") String userId) {
         return reservationService.getUserReservations(userId);
+    }
+
+    @RequestMapping(path = "/user/{userId}/active", method = RequestMethod.GET)
+    public ArrayList<CustomerReservationAggregate>
+    getActiveCustomerReservations(@PathVariable("userId") String userId) {
+        return reservationService.getActiveUserReservations(userId);
     }
 
     //endregion
@@ -52,7 +58,7 @@ public class ReservationController {
     //region DELETE
     @RequestMapping(path = "/{reservationId}", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.OK)
-    public void deleteReservation(@PathVariable("reservationId")String reservationId) {
+    public void deleteReservation(@PathVariable("reservationId") String reservationId) {
         reservationService.deleteReservation(reservationId);
     }
 
@@ -62,7 +68,7 @@ public class ReservationController {
 
     @RequestMapping(path = "/{reservationId}/return", method = RequestMethod.PATCH)
     @ResponseStatus(HttpStatus.OK)
-    public void endReservation(@PathVariable("reservationId")String reservationId) {
+    public void endReservation(@PathVariable("reservationId") String reservationId) {
         reservationService.endReservation(reservationId);
     }
 

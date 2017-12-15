@@ -37,7 +37,6 @@ public class BookService {
         if(bookDao == null)
             throw new NotFoundException();
         return BookTransformer.transform(bookDao);
-
     }
 
     public ArrayList<Book> getBooks() {
