@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -65,7 +66,7 @@ public class UserServiceTest {
     @Test
     public void createUser_returnsUser_validRequest(){
         //arrange
-        createUserRequest = new CreateUserRequest(emailAddress,password, firstName,lastName);
+        createUserRequest = new CreateUserRequest(emailAddress,password, firstName,lastName, false);
 
         user = new User();
         user.setFirstName(firstName);
@@ -73,7 +74,7 @@ public class UserServiceTest {
         user.setEmailAddress(emailAddress);
 
         when(userRepository.existsByEmailAddress(emailAddress)).thenReturn(false);
-        when(authService.createAuth0User(user, password)).thenReturn(auth0Id);
+        when(authService.createAuth0User(Mockito.any(User.class), Mockito.anyString(), Mockito.anyBoolean())).thenReturn(auth0Id);
 
         //act
         User createdUser = userService.createUser(createUserRequest);
@@ -88,7 +89,7 @@ public class UserServiceTest {
     @Test(expected = DataIntegrityViolationException.class)
     public void createUser_throwsDataIntegrityViolation_emailExists(){
         //arrange
-        createUserRequest = new CreateUserRequest(emailAddress,password,firstName,lastName);
+        createUserRequest = new CreateUserRequest(emailAddress,password,firstName,lastName, false);
         when(userRepository.existsByEmailAddress(emailAddress)).thenReturn(true);
 
 

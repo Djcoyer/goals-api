@@ -85,28 +85,28 @@ public class AuthService {
         return tokens;
     }
 
-    public String createAuth0User(User customer, String password) {
-        String firstName = customer.getFirstName();
-        String lastName = customer.getLastName();
-        String emailAddress = customer.getEmailAddress();
-        String userId = customer.getUserId();
+    public String createAuth0User(User user, String password, boolean isAdmin) {
+        String firstName = user.getFirstName();
+        String lastName = user.getLastName();
+        String emailAddress = user.getEmailAddress();
+        String userId = user.getUserId();
         if (Arrays.asList(firstName, lastName, emailAddress, userId).contains(null))
             throw new InvalidInputException();
-        com.auth0.json.mgmt.users.User user = new com.auth0.json.mgmt.users.User();
+        com.auth0.json.mgmt.users.User auth0User = new com.auth0.json.mgmt.users.User();
         AppMetadata appMetadata = new AppMetadata();
         String[] roles = new String[2];
         roles[0] = "user";
-        roles[1] = "admin";
+        if(isAdmin) roles[0] = "admin";
         CustomInfo customInfo = new CustomInfo(firstName,lastName,userId,roles);
         appMetadata.put("customerInfo", customInfo);
-        user.setAppMetadata(appMetadata);
-        user.setPassword(password);
-        user.setEmail(emailAddress);
-        user.setConnection("Username-Password-Authentication");
+        auth0User.setAppMetadata(appMetadata);
+        auth0User.setPassword(password);
+        auth0User.setEmail(emailAddress);
+        auth0User.setConnection("Username-Password-Authentication");
 
         try {
             managementAPI = getManagementApi();
-            Request<com.auth0.json.mgmt.users.User> createUserRequest = managementAPI.users().create(user);
+            Request<com.auth0.json.mgmt.users.User> createUserRequest = managementAPI.users().create(auth0User);
             com.auth0.json.mgmt.users.User createdUser = createUserRequest.execute();
             return createdUser.getId();
         } catch (Exception e) {

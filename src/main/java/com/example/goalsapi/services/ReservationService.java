@@ -40,6 +40,8 @@ public class ReservationService {
     }
 
     public ArrayList<Reservation> getReservationsByUserId(String userId) {
+        if(!userService.userExists(userId))
+            throw new InvalidInputException();
         List<ReservationDao> reservationDaos = reservationRepository.findAllByUserId(userId);
         ArrayList<Reservation> reservations = new ArrayList<>();
         if (reservationDaos == null || reservationDaos.size() == 0)
@@ -53,6 +55,8 @@ public class ReservationService {
     }
 
     public Reservation getReservationByUserIdAndBookId(String userId, String bookId) {
+        if(!userService.userExists(userId))
+            throw new InvalidInputException();
         ReservationDao reservationDao = reservationRepository.findByUserIdAndBookId(userId, bookId);
         if (reservationDao == null)
             throw new NotFoundException();
@@ -158,7 +162,7 @@ public class ReservationService {
 
     //region HELPERS
 
-    private Date setReservationEndDate() {
+    public Date setReservationEndDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.DAY_OF_YEAR, 7);

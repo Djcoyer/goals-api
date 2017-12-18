@@ -74,10 +74,10 @@ public class BookService {
         }
         if(bookRepository.findByAuthorAndTitle(book.getAuthor(), book.getTitle()) != null)
             throw new DataIntegrityViolationException("Title and author already exist");
+        book.setBookId(UUID.randomUUID().toString());
         BookDao bookDao = BookTransformer.transform(book);
         bookDao.setAvailable(true);
-        bookDao = bookRepository.save(bookDao);
-        book.setBookId(bookDao.getBookId());
+        bookRepository.save(bookDao);
         book.setAvailable(bookDao.isAvailable());
         return book;
     }

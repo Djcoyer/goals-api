@@ -35,11 +35,11 @@ public class UserService {
         user.setEmailAddress(request.getEmailAddress());
         user.setLastName(request.getLastName());
         user.setFirstName(request.getFirstName());
+        user.setUserId(UUID.randomUUID().toString());
         if (userRepository.existsByEmailAddress(request.getEmailAddress()))
             throw new DataIntegrityViolationException("Email address already in use");
-        String auth0Id = authService.createAuth0User(user, request.getPassword());
+        String auth0Id = authService.createAuth0User(user, request.getPassword(), request.isAdmin());
         user.setAuth0Id(auth0Id);
-        user.setUserId(UUID.randomUUID().toString());
         UserDao userDao = UserTransformer.transform(user);
         userRepository.insert(userDao);
 
