@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerReservationAggregate {
+public class UserReservationAggregate {
     private String userId;
     private String bookId;
     private String reservationId;

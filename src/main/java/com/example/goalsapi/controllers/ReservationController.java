@@ -1,6 +1,6 @@
 package com.example.goalsapi.controllers;
 
-import com.example.goalsapi.models.CustomerReservationAggregate;
+import com.example.goalsapi.models.UserReservationAggregate;
 import com.example.goalsapi.models.Reservation;
 import com.example.goalsapi.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class ReservationController {
     }
 
     @RequestMapping(path = "/user/{userId}", method = RequestMethod.GET)
-    public ArrayList<CustomerReservationAggregate>
+    public ArrayList<UserReservationAggregate>
     getCustomerReservations(@PathVariable("userId") String userId) {
         return reservationService.getUserReservations(userId);
     }

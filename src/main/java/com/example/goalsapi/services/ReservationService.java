@@ -4,7 +4,7 @@ import com.example.goalsapi.Exceptions.ConflictException;
 import com.example.goalsapi.Exceptions.InvalidInputException;
 import com.example.goalsapi.Exceptions.NotFoundException;
 import com.example.goalsapi.models.Book;
-import com.example.goalsapi.models.CustomerReservationAggregate;
+import com.example.goalsapi.models.UserReservationAggregate;
 import com.example.goalsapi.models.Reservation;
 import com.example.goalsapi.models.dao.ReservationDao;
 import com.example.goalsapi.repositories.ReservationRepository;
@@ -76,15 +76,15 @@ public class ReservationService {
         return reservations;
     }
 
-    public ArrayList<CustomerReservationAggregate> getUserReservations(String userId) {
+    public ArrayList<UserReservationAggregate> getUserReservations(String userId) {
         ArrayList<Reservation> reservations = getReservationsByUserId(userId);
-        ArrayList<CustomerReservationAggregate> reservationAggregates = new ArrayList<>();
+        ArrayList<UserReservationAggregate> reservationAggregates = new ArrayList<>();
         if (reservations.size() == 0)
             return reservationAggregates;
         for (Reservation reservation : reservations) {
             String bookId = reservation.getBookId();
             Book book = bookService.getBookAggregateInfo(bookId);
-            CustomerReservationAggregate aggregate = new CustomerReservationAggregate();
+            UserReservationAggregate aggregate = new UserReservationAggregate();
             aggregate.setTitle(book.getTitle());
             aggregate.setAuthor(book.getAuthor());
             aggregate.setEndDate(reservation.getReservationEndDate());
@@ -99,12 +99,10 @@ public class ReservationService {
         return reservationAggregates;
     }
 
-    public CustomerReservationAggregate getUserReservation(String customerId, String bookId) {
+    public UserReservationAggregate getUserReservation(String customerId, String bookId) {
         Reservation reservation = getReservationByUserIdAndBookId(customerId, bookId);
-        if (reservation == null)
-            throw new NotFoundException();
         Book book = bookService.getBook(bookId);
-        CustomerReservationAggregate aggregate = new CustomerReservationAggregate();
+        UserReservationAggregate aggregate = new UserReservationAggregate();
         aggregate.setAuthor(book.getAuthor());
         aggregate.setBookId(book.getBookId());
         aggregate.setUserId(customerId);
@@ -135,7 +133,7 @@ public class ReservationService {
 
         bookService.setBookAvailable(reservation.getBookId(), false);
 
-        reservationDao = reservationRepository.save(reservationDao);
+        reservationRepository.save(reservationDao);
         reservation.setReservationId(reservationDao.getReservationId());
         return reservation;
     }
@@ -149,9 +147,9 @@ public class ReservationService {
     //region PATCH
 
     public void endReservation(String reservationId) {
+       if(!reservationRepository.exists(reservationId))
+           throw new NotFoundException();
         ReservationDao reservationDao = reservationRepository.findOne(reservationId);
-        if(reservationDao == null)
-            throw new NotFoundException();
         String bookId = reservationDao.getBookId();
         bookService.setBookAvailable(bookId, true);
         reservationDao.setReturnedDate(new Date());
