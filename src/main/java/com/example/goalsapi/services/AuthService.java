@@ -2,6 +2,7 @@ package com.example.goalsapi.services;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.UsersEntity;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.jwt.JWT;
@@ -32,7 +33,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -58,22 +58,29 @@ public class AuthService {
     }
 
     public AuthTokens login(LoginInfo loginInfo) {
-        if (loginInfo.getUsername() == null || loginInfo.getUsername() == "" ||
-                loginInfo.getPassword() == null || loginInfo.getPassword() == "") {
+        if (loginInfo.getUsername() == null || loginInfo.getUsername().equalsIgnoreCase("") ||
+                loginInfo.getPassword() == null || loginInfo.getPassword().equalsIgnoreCase("")) {
             throw new InvalidInputException();
         }
 
-        authApi = new AuthAPI(domain, clientId, clientSecret);
+        authApi = getAuthApi();
         AuthRequest request = authApi.login(loginInfo.getUsername(), loginInfo.getPassword(),
-                "Username-Password-Authentication").setScope("openid profile offline_access");
+                "Username-Password-Authentication");
+        request.setScope("openid profile offline_access");
 
         try {
             TokenHolder holder = request.execute();
             AuthTokens tokens = getTokens(holder);
             return tokens;
         } catch (Auth0Exception e) {
-            throw new InvalidInputException();
+            throw new InternalServerException();
         }
+    }
+
+    private AuthAPI getAuthApi() {
+        if(authApi != null) return authApi;
+        authApi = new AuthAPI(domain,clientId,clientSecret);
+        return authApi;
     }
 
     private AuthTokens getTokens(TokenHolder holder) {
@@ -90,7 +97,8 @@ public class AuthService {
         String lastName = user.getLastName();
         String emailAddress = user.getEmailAddress();
         String userId = user.getUserId();
-        if (Arrays.asList(firstName, lastName, emailAddress, userId).contains(null))
+        if (Arrays.asList(firstName, lastName, emailAddress, userId).contains(null)
+                || Arrays.asList(firstName,lastName,emailAddress,userId).contains(""))
             throw new InvalidInputException();
         com.auth0.json.mgmt.users.User auth0User = new com.auth0.json.mgmt.users.User();
         AppMetadata appMetadata = new AppMetadata();
@@ -106,17 +114,18 @@ public class AuthService {
 
         try {
             managementAPI = getManagementApi();
-            Request<com.auth0.json.mgmt.users.User> createUserRequest = managementAPI.users().create(auth0User);
+            UsersEntity entity = managementAPI.users();
+            Request<com.auth0.json.mgmt.users.User> createUserRequest = entity.create(auth0User);
             com.auth0.json.mgmt.users.User createdUser = createUserRequest.execute();
             return createdUser.getId();
         } catch (Exception e) {
             throw new InternalServerException();
         }
-
-
     }
 
     public void updateUser(UpdateUserRequest request, String auth0Id) {
+        if(auth0Id == null || auth0Id.equalsIgnoreCase(""))
+            throw new InvalidInputException();
         com.auth0.json.mgmt.users.User userToUpdate = new com.auth0.json.mgmt.users.User();
         String firstName = request.getFirstName();
         String lastName = request.getLastName();
@@ -125,18 +134,22 @@ public class AuthService {
         AppMetadata appMetadata = new AppMetadata();
 
 
-        if (firstName != null)
-            appMetadata.replace("FirstName", request.getFirstName());
-        if (lastName != null)
-            appMetadata.replace("LastName", request.getLastName());
+        if (firstName != null && !firstName.equalsIgnoreCase(""))
+            appMetadata.put("FirstName", request.getFirstName());
+        if (lastName != null && !lastName.equalsIgnoreCase(""))
+            appMetadata.put("LastName", request.getLastName());
         userToUpdate.setAppMetadata(appMetadata);
 
-        if (emailAddress != null)
+        if (emailAddress != null && !emailAddress.equalsIgnoreCase(""))
             userToUpdate.setEmail(request.getEmailAddress());
+
+        if(userToUpdate.getAppMetadata().size() == 0)
+            throw new InvalidInputException();
 
         try {
             managementAPI = getManagementApi();
-            Request updateUserRequest = managementAPI.users().update(auth0Id, userToUpdate);
+            UsersEntity entity = managementAPI.users();
+            Request updateUserRequest = entity.update(auth0Id, userToUpdate);
             updateUserRequest.execute();
         } catch (IOException e) {
             throw new InternalServerException();
@@ -199,16 +212,18 @@ public class AuthService {
         }
     }
 
-    public String getCustomerIdFromAuthorizationHeader(String authHeader) {
+    public String getUserIdFromAuthorizationHeader(String authHeader) {
+        if(authHeader == null)
+            throw new InvalidInputException();
         if (!authHeader.contains("Bearer"))
             throw new ForbiddenException();
         String[] authSections = authHeader.split(" ");
         String token = authSections[1];
-        String customerId = getCustomerIdFromJwt(token);
+        String customerId = getUserIdFromJwt(token);
         return customerId;
     }
 
-    public String getCustomerIdFromJwt(String id_token) {
+    public String getUserIdFromJwt(String id_token) {
         DecodedJWT jwt = JWT.decode(id_token);
         Map<String, Claim> claims = jwt.getClaims();
         Claim claim = claims.get("http://customerInfo");
@@ -221,7 +236,7 @@ public class AuthService {
 
     public void revokeAuthRefreshToken(String refreshToken) {
         try {
-            authApi = new AuthAPI(domain, clientId, clientSecret);
+            authApi = getAuthApi();
             Request<Void> request = authApi.revokeToken(refreshToken);
             request.execute();
         } catch (Auth0Exception e) {

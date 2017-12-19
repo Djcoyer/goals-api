@@ -1,6 +1,5 @@
 package com.example.goalsapi.services;
 
-import com.example.goalsapi.Exceptions.ConflictException;
 import com.example.goalsapi.Exceptions.InvalidInputException;
 import com.example.goalsapi.Exceptions.NotFoundException;
 import com.example.goalsapi.models.User;
@@ -11,7 +10,6 @@ import com.example.goalsapi.models.auth.UpdateUserRequest;
 import com.example.goalsapi.models.dao.UserDao;
 import com.example.goalsapi.repositories.UserRepository;
 import com.example.goalsapi.transformers.UserTransformer;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -74,7 +72,7 @@ public class UserService {
 
     public AuthTokens login(LoginInfo loginInfo) {
         AuthTokens authTokens = authService.login(loginInfo);
-        String userId = authService.getCustomerIdFromJwt(authTokens.getId_token());
+        String userId = authService.getUserIdFromJwt(authTokens.getId_token());
         if(!userRepository.exists(userId))
             throw new NotFoundException();
         UserDao userDao = userRepository.findOne(userId);
@@ -84,7 +82,7 @@ public class UserService {
     }
 
     public void logout(String authHeader) {
-        String userId = authService.getCustomerIdFromAuthorizationHeader(authHeader);
+        String userId = authService.getUserIdFromAuthorizationHeader(authHeader);
         if(userId == null)
             throw new InvalidInputException();
         if(!userRepository.exists(userId))

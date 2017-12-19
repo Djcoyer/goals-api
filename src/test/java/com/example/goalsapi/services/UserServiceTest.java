@@ -19,7 +19,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -161,7 +160,7 @@ public class UserServiceTest {
         loginInfo = new LoginInfo(emailAddress,password);
         authTokens = new AuthTokens(idToken,accessToken,refreshToken,100);
         when(authService.login(loginInfo)).thenReturn(authTokens);
-        when(authService.getCustomerIdFromJwt(idToken)).thenReturn(userId);
+        when(authService.getUserIdFromJwt(idToken)).thenReturn(userId);
         when(userRepository.exists(userId)).thenReturn(true);
         when(userRepository.findOne(userId)).thenReturn(userDao);
 
@@ -181,7 +180,7 @@ public class UserServiceTest {
         authTokens = new AuthTokens(idToken,accessToken,refreshToken,100);
         when(authService.login(loginInfo)).thenReturn(authTokens);
         when(userRepository.exists(userId)).thenReturn(false);
-        when(authService.getCustomerIdFromJwt(idToken)).thenReturn(userId);
+        when(authService.getUserIdFromJwt(idToken)).thenReturn(userId);
         when(userRepository.findOne(userId)).thenReturn(userDao);
 
         //act
@@ -198,7 +197,7 @@ public class UserServiceTest {
     public void logout_runsSuccessfully_validRequest(){
         //arrange
         String authHeader = "AuthHeader";
-        when(authService.getCustomerIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
+        when(authService.getUserIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
         when(userRepository.exists(userId)).thenReturn(true);
         when(userRepository.findOne(userId)).thenReturn(userDao);
         doNothing().when(authService).revokeAuthRefreshToken(refreshToken);
@@ -212,7 +211,7 @@ public class UserServiceTest {
     public void logout_throwsInvalidInput_badAuthHeader(){
         //arrange
         String authHeader = "badauthheader!";
-        when(authService.getCustomerIdFromAuthorizationHeader(authHeader)).thenReturn(null);
+        when(authService.getUserIdFromAuthorizationHeader(authHeader)).thenReturn(null);
 
         //act
         userService.logout(authHeader);
@@ -225,7 +224,7 @@ public class UserServiceTest {
         //arrange
         userDao.setRefreshToken(null);
         String authHeader = "authheader";
-        when(authService.getCustomerIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
+        when(authService.getUserIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
         when(userRepository.exists(userId)).thenReturn(true);
         when(userRepository.findOne(userId)).thenReturn(userDao);
 
@@ -238,7 +237,7 @@ public class UserServiceTest {
     public void logout_throwsNotFound_badId(){
         //arrange
         String authHeader = "authHeader";
-        when(authService.getCustomerIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
+        when(authService.getUserIdFromAuthorizationHeader(authHeader)).thenReturn(userId);
         when(userRepository.exists(userId)).thenReturn(false);
 
         //act
