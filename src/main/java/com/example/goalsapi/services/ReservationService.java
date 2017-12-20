@@ -4,8 +4,8 @@ import com.example.goalsapi.Exceptions.ConflictException;
 import com.example.goalsapi.Exceptions.InvalidInputException;
 import com.example.goalsapi.Exceptions.NotFoundException;
 import com.example.goalsapi.models.Book;
-import com.example.goalsapi.models.UserReservationAggregate;
 import com.example.goalsapi.models.Reservation;
+import com.example.goalsapi.models.UserReservationAggregate;
 import com.example.goalsapi.models.dao.ReservationDao;
 import com.example.goalsapi.repositories.ReservationRepository;
 import com.example.goalsapi.transformers.ReservationTransformer;
@@ -138,12 +138,25 @@ public class ReservationService {
         return reservation;
     }
 
+    //region DELETE
+
     public void deleteReservation(String reservationId) {
         if(!reservationRepository.exists(reservationId))
             throw new NotFoundException();
         reservationRepository.delete(reservationId);
     }
 
+    //When a book is deleted from the database
+    //Reservations that depend on that book
+    //Should be removed to avoid nulls
+    public void deleteReservationsByBookId(String bookId) {
+        if(bookId == null || bookId.equalsIgnoreCase(""))
+            throw new InvalidInputException();
+        reservationRepository.deleteAllByBookId(bookId);
+    }
+
+
+    //endregion
     //region PATCH
 
     public void endReservation(String reservationId) {

@@ -56,6 +56,12 @@ public class ReservationController {
         reservationService.deleteReservation(reservationId);
     }
 
+    @DeleteMapping(path = "/books/{bookId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteAllByBookId(@PathVariable("bookId")String bookId) {
+        reservationService.deleteReservationsByBookId(bookId);
+    }
+
     //endregion
 
     //region PATCH

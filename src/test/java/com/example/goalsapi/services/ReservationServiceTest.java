@@ -404,6 +404,29 @@ public class ReservationServiceTest {
 
     //endregion
 
+    //region DELETE_RESERVATIONS_BOOK_ID
+
+    @Test
+    public void deleteReservationsByBookId_runsSuccessfully_validRequest(){
+        //arrange
+
+        //act
+        reservationService.deleteReservationsByBookId(bookId);
+
+        //assert
+    }
+
+    @Test(expected = InvalidInputException.class)
+    public void deleteReservationsByBookId_throwsInvalidInput_emptyBookId(){
+        //arrange
+
+        //act
+        reservationService.deleteReservationsByBookId("");
+        //assert
+    }
+
+    //endregion
+
 
     //region HELPERS
 
